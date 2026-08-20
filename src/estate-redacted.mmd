@@ -15,9 +15,9 @@ flowchart TB
 
     subgraph REPOS["Repositories"]
       FP["flowpay/ - Python<br/>services/payments - services/ledger - web/dashboard<br/>git remote github.com/«org»/flowpay"]
-      MD["merchant-dashboard/ - TypeScript - Vite<br/>local git repo"]
+      MD["ft-merchant-dashboard/ - TypeScript - Vite<br/>local git repo"]
       FS["ft-settlements/ - Java 21 - Maven<br/>domain - stream - batch - store<br/>local git repo"]
-      FRED["fred-analysis/ - Python workspace<br/>local only - .env holds the FRED key"]
+      FRED["ft-fred-analysis/ - Python workspace<br/>main = empty post-reset state<br/>deliverable branch = published readout"]
       PLAN["plan/ - reports/<br/>the standing record: ADRs, deployment map, runbooks"]
     end
 
@@ -53,12 +53,12 @@ flowchart TB
     EB["EventBridge ft-settlements-daily<br/>cron 0 2 * * ? *"]
     BLAM["Lambda ft-settlements-batch<br/>same jar - DailyBatchHandler"]
     S3["S3 ft-settlements-«account»<br/>settlements/YYYY-MM-DD.json"]
-    DDB -.->|"stream NEW_AND_OLD_IMAGES - D16"| ESM
-    ESM -.-> SLAM
-    SLAM -.->|"PutItem derived position"| SDDB
-    EB -.-> BLAM
-    SDDB -.->|"Query by settlement_date"| BLAM
-    BLAM -.-> S3
+    DDB -->|"stream NEW_AND_OLD_IMAGES - D18"| ESM
+    ESM --> SLAM
+    SLAM -->|"PutItem derived position"| SDDB
+    EB --> BLAM
+    SDDB -->|"Query by settlement_date"| BLAM
+    BLAM --> S3
   end
 
   %% ========================= GCP =========================
@@ -68,15 +68,15 @@ flowchart TB
 
   %% ===================== build and deploy =====================
   CC1 ==>|"flowpay/deploy/aws/deploy.sh - creates the API,<br/>role, table; build_lambda.sh zips pip wheels, no Docker"| LAM
-  CC1 ==>|"merchant-dashboard/deploy/gcp/deploy_cloud_run.sh<br/>Cloud Build: node:22-alpine build then nginx:1.27-alpine"| CR
-  CC2 -.->|"ft-settlements/deploy/aws/deploy.sh - not written yet<br/>Maven Shade jar to zip - no Docker"| SLAM
+  CC1 ==>|"ft-merchant-dashboard/deploy/gcp/deploy_cloud_run.sh<br/>Cloud Build: node:22-alpine build then nginx:1.27-alpine"| CR
+  CC2 ==>|"ft-settlements/deploy/aws/deploy.sh<br/>Maven Shade jar to zip - no Docker"| SLAM
 
   B["Browser"] --> CR
   CR -->|"proxy_pass to API_UPSTREAM - server-side, no CORS"| APIGW
   B2["Browser"] --> VITE
 
   %% ========================= future =========================
-  subgraph FUT["Future - fred-analysis run where the data scientists already are"]
+  subgraph FUT["Future - ft-fred-analysis run where the data scientists already are"]
     SMS["SageMaker Studio JupyterLab space<br/>managed Linux with a terminal, in-VPC"]
     CC3["Claude Code CLI installed in the space<br/>CLAUDE_CODE_USE_BEDROCK=1<br/>same .claude/settings.json policy layer"]
     BR["Claude on Bedrock - inference<br/>weights never run on SageMaker itself"]
