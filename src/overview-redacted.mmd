@@ -8,13 +8,16 @@ flowchart TB
   BR["<b>Claude on Amazon Bedrock</b><br/>every surface, every session<br/>inference runs in your own AWS account<br/><i>SageMaker runs the client, not the model</i>"]
   POL["<b>Policy lives in the repository</b><br/>what a session may read, run and change<br/>reviewed like any other change"]
 
-  subgraph GCP["GCP — application runtime"]
+  subgraph GCP["GCP"]
     GCPAPP["Customer-facing web"]
     GCPOBS["Logs · metrics · deploy state"]
   end
-  subgraph AWS["AWS — application runtime"]
+  subgraph AWS["AWS"]
     AWSAPP["Payments services"]
-    AWSOBS["Logs · metrics · deploy state"]
+    AWSOBS["Application logs · metrics · deploy state"]
+    ADOT["ADOT collector<br/>OTLP endpoint"]
+    CWCC["<b>CloudWatch — Claude Code usage</b><br/>sessions · tokens · cost · active time<br/>commits · PRs · lines changed<br/>edit-permission decisions"]
+    ADOT --> CWCC
   end
 
   VSC --> CC
@@ -24,6 +27,7 @@ flowchart TB
   CC ==>|"every model call"| BR
   CC ==>|"build and deploy"| AWSAPP
   CC ==>|"build and deploy"| GCPAPP
+  CC -->|"OpenTelemetry — how the tool itself is measured"| ADOT
   AWSOBS -.->|"read-only — what an SRE investigates with"| CC
   GCPOBS -.->|"read-only"| CC
 
