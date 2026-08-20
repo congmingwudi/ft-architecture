@@ -15,9 +15,7 @@ flowchart TB
   subgraph AWS["AWS"]
     AWSAPP["Payments services"]
     AWSOBS["Application logs · metrics · deploy state"]
-    ADOT["ADOT collector<br/>OTLP endpoint"]
-    CWCC["<b>CloudWatch — Claude Code usage</b><br/>sessions · tokens · cost · active time<br/>commits · PRs · lines changed<br/>edit-permission decisions"]
-    ADOT --> CWCC
+    CWCC["<b>CloudWatch — Claude Code usage</b><br/>native OTLP endpoints, no collector<br/>sessions · tokens · cost · active time<br/>commits · PRs · lines changed<br/>edit-permission decisions<br/><i>behavioural signal only — prompt content off</i>"]
   end
 
   VSC --> CC
@@ -27,7 +25,7 @@ flowchart TB
   CC ==>|"every model call"| BR
   CC ==>|"build and deploy"| AWSAPP
   CC ==>|"build and deploy"| GCPAPP
-  CC -->|"OpenTelemetry — how the tool itself is measured"| ADOT
+  CC -->|"OTLP direct — how the tool itself is measured"| CWCC
   AWSOBS -.->|"read-only — what an SRE investigates with"| CC
   GCPOBS -.->|"read-only"| CC
 
