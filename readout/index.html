@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Credit-risk readout — FinTechCo</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>📊</text></svg>">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="wrap readout">
+<nav class="site">
+  <a href="../">Architecture</a>
+  <a href="./" aria-current="page">Credit-risk readout</a>
+</nav>
+<div class="meta">
+  <span>Generated 2026-08-20 17:42 UTC</span><span class="dot">·</span>
+  <span>Produced in a Claude Code session and published from it</span>
+</div>
+<h1>How Fed policy rates flow through to credit-card delinquency</h1>
+<p><strong>Executive readout · credit-risk data science</strong> Generated in a Claude Code session on 2026-08-19 · data retrieved from FRED that day</p>
+<figure><img src="fed-funds-vs-card-delinquency-2026-08-19.png" alt="Fed funds rate versus credit-card delinquency, with the lag annotated"><figcaption>Fed funds rate versus credit-card delinquency, with the lag annotated</figcaption></figure>
+<h2>The finding</h2>
+<p><strong>Credit-card delinquency lags policy-rate changes by roughly two years — eight to ten quarters.</strong> In the same quarter, the two series are effectively uncorrelated. A risk team reading current-quarter rates against current-quarter delinquency is reading noise.</p>
+<h2>What was measured</h2>
+<table><tbody><tr><td>Series</td><td><code>FEDFUNDS</code> — effective fed funds rate, monthly, through July 2026</td></tr><tr><td></td><td><code>DRCCLACBS</code> — credit-card delinquency rate, all commercial banks, quarterly, through 2026 Q1</td></tr><tr><td>Window</td><td>2000 onward, aligned to 105 quarters</td></tr><tr><td>Method</td><td>Cross-correlation of year-over-year changes with bootstrapped 95% confidence bands, a distributed-lag regression, a Granger causality test, and a per-episode table of rate-cycle peak → delinquency peak</td></tr></tbody></table>
+<h2>Results</h2>
+<ul><li><strong>Peak correlation at 8 quarters: r = 0.42</strong> (95% CI 0.23 – 0.57).</li><li><strong>Pre-2020 the relationship is markedly stronger: r = 0.71 at 9 quarters.</strong> The pandemic period is the reason the full-sample figure is lower — transfer payments suppressed delinquency while rates moved, and that window is marked on the chart rather than dropped.</li><li><strong>The 2007–09 episode is textbook:</strong> the rate cycle peaked 2007 Q1, delinquency peaked 2009 Q2 — nine quarters.</li><li><strong>Granger causality was not significant.</strong> Stated here because it was run, not buried because it disagreed. The lag structure is a robust <em>association</em>; this analysis does not establish that rate changes cause delinquency changes.</li></ul>
+<h2>What follows for a risk team</h2>
+<p>The practical consequence is about <em>timing</em>, not direction. A tightening cycle's effect on card portfolios shows up roughly two years later, which means:</p>
+<ul><li>Provisioning models keyed to same-quarter rates are keyed to the wrong quarter.</li><li>The 2022–24 hiking cycle's delinquency consequence had already arrived by the 2024 peak visible on the chart.</li><li>Any forward view built on this relationship inherits its confidence interval — r = 0.42 with a band from 0.23 to 0.57 is a directional signal, not a forecast.</li></ul>
+<h2>Provenance and honesty about this document</h2>
+<p>The chart is the actual output of the 2026-08-19 run. The figures above are transcribed from that run's recorded results — they were not recomputed when this page was assembled, and the analysis code is not preserved here because the workspace it ran in is wiped between demonstrations by design.</p>
+<p>Correlation is not causation, the sample is one country over one 26-year window, and the pandemic period is a genuine structural break rather than an outlier to be discarded. Treat this as a well-evidenced starting point for a risk conversation, not as a model.</p>
+<div class="actions">
+  <a class="btn primary" href="fintechco-credit-risk-readout-2026-08-20.pdf">Download PDF</a>
+  <a class="btn" href="../">Estate architecture</a>
+</div>
+<footer>
+  FinTechCo is fictional and this estate is a stand-in — no production system and no real
+  customer data. The analysis uses public FRED series; the chart is the run's own output.
+</footer>
+</div>
+</body>
+</html>
