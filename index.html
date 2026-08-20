@@ -187,9 +187,17 @@ Python and TypeScript and running in your process.</p>
 
 <p><b>The governance story does not fork.</b> The SDK loads the same <code>.claude/</code> skills,
 commands, memory and permission rules as the CLI, so a policy written once for the repository applies to
-an engineer's session, a notebook cell and a pipeline job alike. That is the practical reason to prefer
-it over calling the model API and writing the tool loop yourself: the loop is the part where the
-guardrails live.</p>
+an engineer's session, a notebook cell and a pipeline job alike. The agent loop is where permission
+decisions get made — tool allow and deny, approval prompts, hooks, file scoping — so adopting the SDK
+means inheriting that layer rather than building it.</p>
+
+<p><b>This is not a security argument about the API.</b> The model, the endpoint, the safety behavior and
+the enterprise controls are identical whichever route you take — on Bedrock, IAM, VPC endpoints,
+CloudTrail and Bedrock Guardrails apply to the call regardless of what made it. The difference sits one
+layer up: whether the loop between the model and your filesystem is one you wrote or one you adopted.
+Building your own is a legitimate choice, and a purpose-built harness with no shell tool at all is
+<em>more</em> restrictive than a general-purpose one. The question is not which is safer, but whether that
+layer is something you want to own and maintain.</p>
 
 <h3>What the agent may do to a cloud</h3>
 <p>Read-only calls — <code>describe</code>, <code>get</code>, <code>list</code> — are allowlisted. Calls that
