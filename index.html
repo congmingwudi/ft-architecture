@@ -192,8 +192,8 @@ decisions get made — tool allow and deny, approval prompts, hooks, file scopin
 means inheriting that layer rather than building it.</p>
 
 <p><b>This is not a security argument about the API.</b> The model, the endpoint, the safety behavior and
-the enterprise controls are identical whichever route you take — on Bedrock, IAM, VPC endpoints,
-CloudTrail and Bedrock Guardrails apply to the call regardless of what made it. The difference sits one
+the enterprise controls are identical whichever route you take — on Bedrock, IAM, VPC endpoints and
+CloudTrail apply to the call regardless of what made it, and Bedrock Guardrails can be required of it. The difference sits one
 layer up: whether the loop between the model and your filesystem is one you wrote or one you adopted.
 Building your own is a legitimate choice, and a purpose-built harness with no shell tool at all is
 <em>more</em> restrictive than a general-purpose one. The question is not which is safer, but whether that
