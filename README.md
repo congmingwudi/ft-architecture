@@ -1,0 +1,45 @@
+# FinTechCo — estate architecture (published site)
+
+The published architecture page for the FinTechCo demo estate:
+**https://congmingwudi.github.io/ft-architecture/**
+
+FinTechCo is a **fictional** financial-services company, and this estate is a
+**stand-in** for one of its payments services — not a production system, and it
+holds no real customer data.
+
+## What is in here
+
+| Path | What |
+|---|---|
+| `index.html` | The whole site — one self-contained page, no build step and no external requests. The diagram is inlined as SVG; the pan/zoom/full-screen controls are ~60 lines of vanilla JS. |
+| `src/estate-redacted.mmd` | The mermaid source the SVG was rendered from, with identifiers already redacted. |
+| `src/estate-redacted.svg` | The rendered diagram, as embedded in the page. |
+
+## This is a redacted copy
+
+The source of truth is `plan/01-architecture.md` in the private `finTechCo`
+umbrella repository. This copy exists to be shared, so five identifiers are
+masked before rendering:
+
+| Real | Published as |
+|---|---|
+| AWS account number | `«account»` |
+| API Gateway host | `«api-id».execute-api.us-west-2.amazonaws.com` |
+| Cloud Run service URL | `«service».us-central1.run.app` |
+| GCP project name | `«gcp-project»` |
+| GitHub org | `github.com/«org»/…` |
+
+The masking matters mainly because the payments API is **unauthenticated by
+design** — it is a demo endpoint with no data worth having, but publishing its
+hostname would invite traffic that costs money.
+
+## Republishing after the diagram changes
+
+The full procedure, including the redaction list, lives in
+`plan/16-architecture-site.md` in the umbrella repo. In short: re-render from the
+umbrella's mermaid block, apply the substitutions above, rebuild `index.html`
+with the SVG inlined, and confirm no real identifier survives in the output
+before pushing.
+
+Both diagrams — the private one and this one — are generated from the same
+mermaid block, so if they disagree, this one is stale.

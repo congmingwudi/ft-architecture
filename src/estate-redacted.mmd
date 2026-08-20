@@ -1,0 +1,90 @@
+flowchart TB
+  %% ========================= workstation =========================
+  subgraph WS["Workstation - macOS - projects/claude-code/finTechCo"]
+    direction TB
+
+    subgraph VSC["VS Code - Claude Code opened at the estate root"]
+      CC1["claude<br/>estate CLAUDE.md<br/>.claude/settings.json - read-only aws/gcloud allowlist<br/>/impact-analysis - /architecture-sweep"]
+    end
+
+    subgraph IJ["IntelliJ IDEA - Claude Code opened at ft-settlements/"]
+      CC2["claude<br/>ft-settlements/CLAUDE.md<br/>docs/plan.md worked task by task, TDD"]
+      IDEMCP["IDEA MCP server<br/>http://127.0.0.1:64342/stream<br/>declared in ft-settlements/.mcp.json"]
+      CC2 --- IDEMCP
+    end
+
+    subgraph REPOS["Repositories"]
+      FP["flowpay/ - Python<br/>services/payments - services/ledger - web/dashboard<br/>git remote github.com/«org»/flowpay"]
+      MD["merchant-dashboard/ - TypeScript - Vite<br/>local git repo"]
+      FS["ft-settlements/ - Java 21 - Maven<br/>domain - stream - batch - store<br/>local git repo"]
+      FRED["fred-analysis/ - Python workspace<br/>local only - .env holds the FRED key"]
+      PLAN["plan/ - reports/<br/>the standing record: ADRs, deployment map, runbooks"]
+    end
+
+    subgraph LOCALRUN["Local run loop - the column the panel watches"]
+      UV["uvicorn :8000<br/>FastAPI - InMemoryStore"]
+      VITE["Vite dev server :5173<br/>proxies /v1 to :8000"]
+      MVN["mvn test / mvn clean package<br/>shaded jar at target/ft-settlements.jar"]
+      VITE --> UV
+    end
+  end
+
+  CC1 -->|"edits, tests, reviews"| FP
+  CC1 -->|"edits, tests, reviews"| MD
+  CC1 -->|"vignette 2 workspace"| FRED
+  CC1 -->|"writes reports, ADRs, workstreams"| PLAN
+  CC2 -->|"edits, TDD loop, runs the suite"| FS
+  FP -->|"make run"| UV
+  MD -->|"npm run dev"| VITE
+  FS -->|"mvn clean package"| MVN
+
+  %% ========================= AWS =========================
+  subgraph AWS["AWS - account «account» - us-west-2"]
+    direction TB
+    APIGW["API Gateway HTTP API - flowpay-api<br/>$default stage - Lambda proxy integration<br/>«api-id».execute-api.us-west-2.amazonaws.com"]
+    LAM["Lambda flowpay-api<br/>python3.12 - arm64 - 512 MB - 15 s<br/>FastAPI via Mangum - FLOWPAY_STORE=dynamodb"]
+    DDB["DynamoDB flowpay-charges<br/>PK charge_id - PAY_PER_REQUEST<br/>money as integer cents"]
+    APIGW --> LAM
+    LAM -->|"GetItem / PutItem"| DDB
+
+    ESM["EventSourceMapping<br/>StartingPosition LATEST - batch 10"]
+    SLAM["Lambda ft-settlements<br/>java21 - arm64 - 512 MB<br/>ChargeStreamHandler"]
+    SDDB["DynamoDB ft-settlements<br/>PK settlement_date - SK charge_id"]
+    EB["EventBridge ft-settlements-daily<br/>cron 0 2 * * ? *"]
+    BLAM["Lambda ft-settlements-batch<br/>same jar - DailyBatchHandler"]
+    S3["S3 ft-settlements-«account»<br/>settlements/YYYY-MM-DD.json"]
+    DDB -.->|"stream NEW_AND_OLD_IMAGES - D16"| ESM
+    ESM -.-> SLAM
+    SLAM -.->|"PutItem derived position"| SDDB
+    EB -.-> BLAM
+    SDDB -.->|"Query by settlement_date"| BLAM
+    BLAM -.-> S3
+  end
+
+  %% ========================= GCP =========================
+  subgraph GCP["GCP - project «gcp-project» - us-central1"]
+    CR["Cloud Run flowpay-merchant-dashboard<br/>nginx: static dist/ + /v1 reverse proxy<br/>min 0 / max 2 - 256 Mi - unauthenticated<br/>«service».us-central1.run.app"]
+  end
+
+  %% ===================== build and deploy =====================
+  CC1 ==>|"flowpay/deploy/aws/deploy.sh - creates the API,<br/>role, table; build_lambda.sh zips pip wheels, no Docker"| LAM
+  CC1 ==>|"merchant-dashboard/deploy/gcp/deploy_cloud_run.sh<br/>Cloud Build: node:22-alpine build then nginx:1.27-alpine"| CR
+  CC2 -.->|"ft-settlements/deploy/aws/deploy.sh - not written yet<br/>Maven Shade jar to zip - no Docker"| SLAM
+
+  B["Browser"] --> CR
+  CR -->|"proxy_pass to API_UPSTREAM - server-side, no CORS"| APIGW
+  B2["Browser"] --> VITE
+
+  %% ========================= future =========================
+  subgraph FUT["Future - fred-analysis run where the data scientists already are"]
+    SMS["SageMaker Studio JupyterLab space<br/>managed Linux with a terminal, in-VPC"]
+    CC3["Claude Code CLI installed in the space<br/>CLAUDE_CODE_USE_BEDROCK=1<br/>same .claude/settings.json policy layer"]
+    BR["Claude on Bedrock - inference<br/>weights never run on SageMaker itself"]
+    SMS --> CC3
+    CC3 -->|"every model call"| BR
+  end
+  FRED -.->|"notebooks and .env move into the space"| SMS
+  CC3 -.->|"reads the FRED API over the network"| FREDAPI["FRED API - api.stlouisfed.org"]
+
+  classDef planned stroke-dasharray:3;
+  class ESM,SLAM,SDDB,EB,BLAM,S3,SMS,CC3,BR,FREDAPI planned;
