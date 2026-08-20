@@ -78,13 +78,19 @@ flowchart TB
   %% ========================= future =========================
   subgraph FUT["Future - ft-fred-analysis run where the data scientists already are"]
     SMS["SageMaker Studio JupyterLab space<br/>managed Linux with a terminal, in-VPC"]
-    CC3["Claude Code CLI installed in the space<br/>CLAUDE_CODE_USE_BEDROCK=1<br/>same .claude/settings.json policy layer"]
+    CC3["Claude Code CLI installed in the space<br/>npm i -g @anthropic-ai/claude-code<br/>CLAUDE_CODE_USE_BEDROCK=1"]
+    SDK["Agent SDK, called from a notebook cell<br/>pip install claude-agent-sdk<br/>agent and analysis in one artifact"]
+    POLICY3["the same .claude/ policy layer<br/>skills, permissions and memory<br/>loaded identically by both"]
     BR["Claude on Bedrock - inference<br/>weights never run on SageMaker itself"]
     SMS --> CC3
+    SMS --> SDK
+    POLICY3 --> CC3
+    POLICY3 --> SDK
     CC3 -->|"every model call"| BR
+    SDK -->|"every model call"| BR
   end
   FRED -.->|"notebooks and .env move into the space"| SMS
   CC3 -.->|"reads the FRED API over the network"| FREDAPI["FRED API - api.stlouisfed.org"]
 
   classDef planned stroke-dasharray:3;
-  class ESM,SLAM,SDDB,EB,BLAM,S3,SMS,CC3,BR,FREDAPI planned;
+  class ESM,SLAM,SDDB,EB,BLAM,S3,SMS,CC3,SDK,POLICY3,BR,FREDAPI planned;
