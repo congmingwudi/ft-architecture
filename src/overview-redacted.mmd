@@ -1,0 +1,33 @@
+flowchart TB
+  VSC["VS Code<br/>software engineers"]
+  IJ["IntelliJ IDEA<br/>Java engineers"]
+  SM["SageMaker Studio<br/>data scientists, beside the data"]
+
+  CC["<b>Claude Code</b><br/>the same tool, the same policy,<br/>wherever the work already happens"]
+
+  BR["<b>Claude on Amazon Bedrock</b><br/>every surface, every session<br/>inference runs in your own AWS account<br/><i>SageMaker runs the client, not the model</i>"]
+  POL["<b>Policy lives in the repository</b><br/>what a session may read, run and change<br/>reviewed like any other change"]
+
+  subgraph GCP["GCP — application runtime"]
+    GCPAPP["Customer-facing web"]
+    GCPOBS["Logs · metrics · deploy state"]
+  end
+  subgraph AWS["AWS — application runtime"]
+    AWSAPP["Payments services"]
+    AWSOBS["Logs · metrics · deploy state"]
+  end
+
+  VSC --> CC
+  IJ --> CC
+  SM --> CC
+  POL --> CC
+  CC ==>|"every model call"| BR
+  CC ==>|"build and deploy"| AWSAPP
+  CC ==>|"build and deploy"| GCPAPP
+  AWSOBS -.->|"read-only — what an SRE investigates with"| CC
+  GCPOBS -.->|"read-only"| CC
+
+  classDef hub stroke-width:3px;
+  classDef plane stroke-width:2px;
+  class CC hub;
+  class BR,POL plane;

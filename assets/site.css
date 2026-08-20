@@ -34,11 +34,11 @@
          border-radius:7px;padding:7px 11px;cursor:pointer}
   button:hover{border-color:var(--accent);color:var(--accent)}
   button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  #stage{position:relative;height:min(74vh,760px);overflow:hidden;background:#fff;cursor:grab;touch-action:none}
-  #stage.grabbing{cursor:grabbing}
-  #pan{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform}
-  #pan svg{display:block;max-width:none!important;height:auto}
-  #stage:fullscreen{height:100vh;background:#fff}
+  .stage{position:relative;height:min(74vh,760px);overflow:hidden;background:#fff;cursor:grab;touch-action:none}
+  .stage.grabbing{cursor:grabbing}
+  .pan{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform}
+  .pan svg{display:block;max-width:none!important;height:auto}
+  .stage:fullscreen{height:100vh;background:#fff}
   .hint{font-size:13px;color:var(--muted);margin:10px 0 0}
 
   .legend{display:flex;gap:20px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);margin:14px 0 0;padding:0;list-style:none}
