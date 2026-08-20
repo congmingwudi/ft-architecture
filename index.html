@@ -109,9 +109,11 @@ builds and deploys them.</p>
   </div>
 </div>
 
-<h2>Two editors, deliberately scoped</h2>
-<p>The interesting part of the diagram is not the clouds — it is the two development sessions and what each
-one is allowed to touch.</p>
+<h2>Four surfaces, deliberately scoped</h2>
+<p>The interesting part of the diagram is not the clouds — it is the sessions, and what each one is
+allowed to touch. Claude Code is a command-line tool with editor integrations, so the surface is
+wherever a given group already works. Two of these run in this estate today; the other two are the
+same tool, pointed at a different seat.</p>
 
 <table>
   <thead><tr><th>Session</th><th>Scope</th><th>Builds and deploys</th></tr></thead>
@@ -126,6 +128,16 @@ one is allowed to touch.</p>
       <td>That one repository only. It cannot open the Python it reads from</td>
       <td>The settlement service to AWS, once its deploy script is verified</td>
     </tr>
+    <tr>
+      <td><b>SageMaker Studio</b> — data scientists<br><span class="avail">available, not used in this estate</span></td>
+      <td>A notebook workspace beside the data. The managed JupyterLab environment is ordinary Linux with a terminal, so the CLI installs and runs there like anywhere else</td>
+      <td>Nothing. Analysis work produces findings and charts, not deployments — and it publishes its own readout when asked</td>
+    </tr>
+    <tr>
+      <td><b>Any terminal</b> — SREs<br><span class="avail">available, not used in this estate</span></td>
+      <td>Read-only against both clouds: <code>describe</code>, <code>get</code>, <code>list</code>. Cloud mutations are denied outright, so an investigation cannot become a change</td>
+      <td>Nothing, by construction. It reads logs, metrics and deploy state to answer &ldquo;what changed, and when?&rdquo;</td>
+    </tr>
   </tbody>
 </table>
 
@@ -133,6 +145,12 @@ one is allowed to touch.</p>
 cannot open the payments service cannot accidentally &ldquo;fix&rdquo; it while working on settlement. The
 wider session gets the opposite treatment, because an impact analysis that cannot read the dashboard is not
 an impact analysis.</p>
+
+<p>The bottom two rows matter for a different reason: <b>they are not separate products.</b> The data
+scientist in a notebook and the SRE in a terminal get the same binary, the same permission model and the
+same policy files as the engineers — pointed at a different seat and scoped to different work. The SRE
+surface is the clearest case: its entire capability is the read-only cloud allowlist this estate already
+uses for its own audits, which is why an investigation session cannot turn into a change.</p>
 
 <h3>What the agent may do to a cloud</h3>
 <p>Read-only calls — <code>describe</code>, <code>get</code>, <code>list</code> — are allowlisted. Calls that
