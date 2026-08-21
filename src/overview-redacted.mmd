@@ -15,6 +15,10 @@ flowchart TB
     JIRA["Jira — the delivery record<br/><i>a skill, driving the REST API</i>"]
     SLACK["Slack — where readouts land<br/><i>MCP server</i>"]
     IDEMCP["The IDE itself — diagnostics, open file<br/><i>MCP server</i>"]
+    %% invisible links lay these out 2x2 instead of one tall column, so the
+    %% diagram fits a slide: GH/JIRA share a rank, SLACK/IDEMCP sit beneath them
+    GH ~~~ SLACK
+    JIRA ~~~ IDEMCP
   end
 
   subgraph GCP["GCP"]
