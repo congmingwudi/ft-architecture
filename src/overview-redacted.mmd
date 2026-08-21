@@ -2,11 +2,20 @@ flowchart TB
   VSC["VS Code<br/>software engineers"]
   IJ["IntelliJ IDEA<br/>Java engineers"]
   SM["SageMaker Studio<br/>data scientists, beside the data<br/><i>CLI in the terminal · Agent SDK in a cell</i>"]
+  TERM["Any terminal<br/>site reliability engineers<br/><i>read-only against both clouds</i>"]
 
-  CC["<b>Claude Code</b><br/>the same tool, the same policy,<br/>wherever the work already happens"]
+  subgraph GOVERNED["Policy lives in the repository — what a session may read, run and change, reviewed like any other change"]
+    CC["<b>Claude Code</b><br/>the same tool, the same policy,<br/>wherever the work already happens"]
+  end
 
   BR["<b>Claude on Amazon Bedrock</b><br/>every surface, every session<br/>inference runs in your own AWS account<br/><i>SageMaker runs the client, not the model</i>"]
-  POL["<b>Policy lives in the repository</b><br/>what a session may read, run and change<br/>reviewed like any other change"]
+
+  subgraph TOOLING["Reached by skill or MCP server"]
+    GH["GitHub — review and CI<br/><i>the gh CLI, and an MCP server</i><br/><i>Actions runs the tests on every PR</i>"]
+    JIRA["Jira — the delivery record<br/><i>a skill, driving the REST API</i>"]
+    SLACK["Slack — where readouts land<br/><i>MCP server</i>"]
+    IDEMCP["The IDE itself — diagnostics, open file<br/><i>MCP server</i>"]
+  end
 
   subgraph GCP["GCP"]
     GCPAPP["Customer-facing web"]
@@ -21,14 +30,8 @@ flowchart TB
   VSC --> CC
   IJ --> CC
   SM --> CC
-  subgraph TOOLING["Reached by skill or MCP server"]
-    GH["GitHub — review and CI<br/><i>the gh CLI, driven by a skill</i><br/><i>Actions runs the tests on every PR</i>"]
-    JIRA["Jira — the delivery record<br/><i>a skill, driving the REST API</i>"]
-    SLACK["Slack — where readouts land<br/><i>MCP server</i>"]
-    IDEMCP["The IDE itself — diagnostics, open file<br/><i>MCP server</i>"]
-  end
+  TERM --> CC
 
-  POL --> CC
   CC <-->|"the tools around the code"| TOOLING
   CC ==>|"every model call"| BR
   CC ==>|"build and deploy"| AWSAPP
@@ -38,7 +41,8 @@ flowchart TB
   GCPOBS -.->|"read-only"| CC
 
   style TOOLING fill:#f6f4ff,stroke-dasharray:4
+  style GOVERNED fill:#f6f4ff,stroke-width:2px
   classDef hub stroke-width:3px;
   classDef plane stroke-width:2px;
   class CC hub;
-  class BR,POL plane;
+  class BR plane;

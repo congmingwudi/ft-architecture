@@ -72,7 +72,7 @@ flowchart TB
   CC2 ==>|"ft-settlements/deploy/aws/deploy.sh<br/>Maven Shade jar to zip - no Docker"| SLAM
 
   subgraph TOOLS["Tooling around the code — skills and MCP servers"]
-    GHUB["GitHub - repositories and pull requests<br/>reached with the gh CLI"]
+    GHUB["GitHub - repositories and pull requests<br/>reached two ways: the gh CLI, and an MCP server"]
     GHA["GitHub Actions - CI<br/>pytest on Python 3.12<br/>on push to main and on every PR<br/><i>flowpay today</i>"]
     GHUB --> GHA
     JIRAB["Jira Cloud - FINTECHCO board<br/>epics and stories, one way: repo to board"]
