@@ -14,9 +14,9 @@ flowchart TB
     end
 
     subgraph REPOS["Repositories"]
-      FP["flowpay/ - Python<br/>services/payments - services/ledger - web/dashboard<br/>git remote github.com/«org»/flowpay"]
-      MD["ft-merchant-dashboard/ - TypeScript - Vite<br/>local git repo"]
-      FS["ft-settlements/ - Java 21 - Maven<br/>domain - stream - batch - store<br/>local git repo"]
+      FP["flowpay/ - Python<br/>services/payments - services/ledger - web/dashboard<br/>git remote github.com/«org»/flowpay (private)"]
+      MD["ft-merchant-dashboard/ - TypeScript - Vite<br/>git remote github.com/«org»/ft-merchant-dashboard (private)<br/>default branch master"]
+      FS["ft-settlements/ - Java 21 - Maven<br/>domain - stream - batch - store<br/>git remote github.com/«org»/ft-settlements (private)"]
       FRED["ft-fred-analysis/ - Python workspace<br/>main = empty post-reset state<br/>deliverable branch = published readout"]
       PLAN["plan/ - reports/<br/>the standing record: ADRs, deployment map, runbooks"]
     end
