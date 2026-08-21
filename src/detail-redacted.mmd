@@ -72,6 +72,9 @@ flowchart TB
   CC2 ==>|"ft-settlements/deploy/aws/deploy.sh<br/>Maven Shade jar to zip - no Docker"| SLAM
 
   subgraph TOOLS["Tooling around the code — skills and MCP servers"]
+    GHUB["GitHub - repositories and pull requests<br/>reached with the gh CLI"]
+    GHA["GitHub Actions - CI<br/>pytest on Python 3.12<br/>on push to main and on every PR<br/><i>flowpay today</i>"]
+    GHUB --> GHA
     JIRAB["Jira Cloud - FINTECHCO board<br/>epics and stories, one way: repo to board"]
     SLACKMCP["Slack MCP server<br/>slack_send_message"]
     SLACKCH["#project-fintechco<br/>the ELT readout lands here"]
@@ -79,6 +82,7 @@ flowchart TB
     SLACKMCP --> SLACKCH
   end
 
+  CC1 -->|"/commit-push-pr skill<br/>commit, push, open the PR"| GHUB
   CC1 -->|"/jira-sync skill runs scripts/jira_sync.py<br/>dry run, approve, then apply"| JIRAB
   PLAN -->|"plan/07-workstreams.md is the source"| JIRAB
   CC1 -->|"publish-readout.sh - page, PDF, push"| PAGES
