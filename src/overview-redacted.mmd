@@ -21,7 +21,14 @@ flowchart TB
   VSC --> CC
   IJ --> CC
   SM --> CC
+  subgraph TOOLING["Reached by skill or MCP server"]
+    JIRA["Jira — the delivery record<br/><i>a skill, driving the REST API</i>"]
+    SLACK["Slack — where readouts land<br/><i>MCP server</i>"]
+    IDEMCP["The IDE itself — diagnostics, open file<br/><i>MCP server</i>"]
+  end
+
   POL --> CC
+  CC <-->|"the tools around the code"| TOOLING
   CC ==>|"every model call"| BR
   CC ==>|"build and deploy"| AWSAPP
   CC ==>|"build and deploy"| GCPAPP
@@ -29,6 +36,7 @@ flowchart TB
   AWSOBS -.->|"read-only — what an SRE investigates with"| CC
   GCPOBS -.->|"read-only"| CC
 
+  style TOOLING fill:#f6f4ff,stroke-dasharray:4
   classDef hub stroke-width:3px;
   classDef plane stroke-width:2px;
   class CC hub;
