@@ -51,6 +51,7 @@ flowchart TB
   TERM --> CC
 
   CC ---|"managed settings"| MDM
+  MDM ~~~ BR
   CC ==>|"every model call"| BR
   CC <-->|"the tools around the code"| TOOLING
   CC ==>|"build and deploy"| AWSAPP
