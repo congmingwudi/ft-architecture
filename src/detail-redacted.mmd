@@ -29,6 +29,11 @@ flowchart TB
     end
   end
 
+  %% ===================== the model plane =====================
+  BEDROCK["<b>Claude on AWS Bedrock (or GCP)</b><br/>every session, every surface<br/>inference in your own AWS account<br/>IAM - CloudTrail - VPC endpoints<br/>PAYG on the AWS agreement<br/>you already signed<br/>zero data retention, per region<br/>and per control plane<br/><i>+ Claude apps gateway:</i><br/><i>no cloud credentials on laptops</i><br/><i>policy and model access</i><br/><i>server-side, per IdP group</i><br/>the full case: plan/17"]
+  CC1 ==>|"every model call"| BEDROCK
+  CC2 ==>|"every model call"| BEDROCK
+
   CC1 -->|"edits, tests, reviews"| FP
   CC1 -->|"edits, tests, reviews"| MD
   CC1 -->|"vignette 2 workspace"| FRED
@@ -78,6 +83,7 @@ flowchart TB
     JIRAB["Jira Cloud - FINTECHCO board<br/>epics and stories, one way: repo to board"]
     SLACKMCP["Slack MCP server<br/>slack_send_message"]
     SLACKCH["#project-fintechco<br/>the ELT readout lands here"]
+    FETCHSK["fetch-fred skill - ft-fred-analysis/.claude/skills/<br/>fetch(series, freq) returns an aligned DataFrame<br/>FRED_API_KEY loaded from .env, scrubbed from output<br/>caches to data/fred-cache/ - no re-fetch while charting"]
     PAGES["GitHub Pages - ft-architecture<br/>architecture page + credit-risk readout<br/>redacted copy of this diagram"]
     SLACKMCP --> SLACKCH
   end
@@ -87,6 +93,8 @@ flowchart TB
   PLAN -->|"plan/07-workstreams.md is the source"| JIRAB
   CC1 -->|"publish-readout.sh - page, PDF, push"| PAGES
   CC1 -->|"posts the readout"| SLACKMCP
+  CC1 -->|"vignette 2: FEDFUNDS + DRCCLACBS, aligned quarterly"| FETCHSK
+  FETCHSK -->|"HTTPS - key from .env, never printed"| FREDAPI["FRED API - api.stlouisfed.org"]
   PLAN -->|"publish-architecture.sh - redact, render, verify"| PAGES
 
   B["Browser"] --> CR
@@ -99,17 +107,20 @@ flowchart TB
     CC3["Claude Code CLI installed in the space<br/>npm i -g @anthropic-ai/claude-code<br/>CLAUDE_CODE_USE_BEDROCK=1"]
     SDK["Agent SDK, called from a notebook cell<br/>pip install claude-agent-sdk<br/>agent and analysis in one artifact"]
     POLICY3["the same .claude/ policy layer<br/>skills, permissions and memory<br/>loaded identically by both"]
-    BR["Claude on Bedrock - inference<br/>weights never run on SageMaker itself"]
     SMS --> CC3
     SMS --> SDK
     POLICY3 --> CC3
     POLICY3 --> SDK
-    CC3 -->|"every model call"| BR
-    SDK -->|"every model call"| BR
   end
+  %% the notebook column reaches the same plane as the IDEs - that is the point of
+  %% it. Weights never run on SageMaker itself; the space runs the client.
+  CC3 -.->|"every model call"| BEDROCK
+  SDK -.->|"every model call"| BEDROCK
   FRED -.->|"notebooks and .env move into the space"| SMS
-  CC3 -.->|"reads the FRED API over the network"| FREDAPI["FRED API - api.stlouisfed.org"]
+  CC3 -.->|"the same fetch-fred skill, from in-VPC:<br/>needs egress, a NAT or a proxy"| FREDAPI
 
   style TOOLS fill:#f6f4ff,stroke-dasharray:4
   classDef planned stroke-dasharray:3;
-  class ESM,SLAM,SDDB,EB,BLAM,S3,SMS,CC3,SDK,POLICY3,BR,FREDAPI planned;
+  class ESM,SLAM,SDDB,EB,BLAM,S3,SMS,CC3,SDK,POLICY3 planned;
+  classDef plane stroke-width:2px;
+  class BEDROCK plane;

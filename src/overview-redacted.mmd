@@ -8,17 +8,27 @@ flowchart TB
     CC["<b>Claude Code</b><br/>the same tool, the same policy,<br/>wherever the work already happens"]
   end
 
-  BR["<b>Claude on Amazon Bedrock</b><br/>every surface, every session<br/>inference runs in your own AWS account<br/><i>SageMaker runs the client, not the model</i>"]
 
   subgraph TOOLING["Reached by skill or MCP server"]
     GH["GitHub — review and CI<br/><i>the gh CLI, and an MCP server</i><br/><b>GitHub Actions</b> — the tests run on every PR"]
     JIRA["Jira — the delivery record<br/><i>a skill, driving the REST API</i>"]
     SLACK["Slack — where readouts land<br/><i>MCP server</i>"]
     IDEMCP["The IDE itself — diagnostics, open file<br/><i>MCP server</i>"]
-    %% invisible links lay these out 2x2 instead of one tall column, so the
-    %% diagram fits a slide: GH/JIRA share a rank, SLACK/IDEMCP sit beneath them
+    FREDSK["Market data — FRED · <i>a skill, wrapping the REST API</i> · the credential is loaded, never printed<br/>fetch, align and cite — the analysis is the analyst's"]
+    %% invisible links keep this group wide rather than tall, so it fits a slide:
+    %% GH/JIRA, SLACK/IDEMCP and FREDSK end up as three columns two rows deep
+    %% instead of one long stack.
+    %% A full-width FREDSK spanning the columns underneath was tried and is not
+    %% available: mermaid caps a node's width at flowchart.wrappingWidth (200px by
+    %% default) and dagre has no column spanning, so a long line wraps instead of
+    %% stretching. Raising wrappingWidth to 420 does widen it — and takes the whole
+    %% diagram from 2466x1116 to 3152x942, an aspect of 3.35 against a slide's 1.78,
+    %% which renders everything ~28% smaller. Height is not the binding constraint
+    %% here; width is. Measured 2026-08-22 — do not re-litigate without re-measuring.
     GH ~~~ SLACK
     JIRA ~~~ IDEMCP
+    SLACK ~~~ FREDSK
+    IDEMCP ~~~ FREDSK
   end
 
   subgraph GCP["GCP"]
@@ -31,13 +41,19 @@ flowchart TB
     CWCC["<b>CloudWatch — Claude Code usage</b><br/>native OTLP endpoints, no collector<br/>sessions · tokens · cost · active time<br/>commits · PRs · lines changed<br/>edit-permission decisions<br/><i>behavioural signal only — prompt content off</i>"]
   end
 
+  subgraph PLANE["Where every model call goes — and how policy reaches the device"]
+  BR["<b>Claude on AWS Bedrock (or GCP)</b><br/>inference runs in your own AWS account<br/>AWS SSO, IAM, CloudTrail, VPC endpoints<br/>PAYG on existing AWS agreement<br/>zero data retention<br/><i>+ Claude apps gateway: model and managed<br/>settings per IdP group, spend limits</i>"]
+  MDM["<b>MDM — Jamf or Intune</b><br/>fleet delivery of endpoint/gateway"]
+  end
+
   VSC --> CC
   IJ --> CC
   SM --> CC
   TERM --> CC
 
-  CC <-->|"the tools around the code"| TOOLING
+  MDM -->|"managed settings, pushed to machines —<br/>the one policy source that is not in the repo"| CC
   CC ==>|"every model call"| BR
+  CC <-->|"the tools around the code"| TOOLING
   CC ==>|"build and deploy"| AWSAPP
   CC ==>|"build and deploy"| GCPAPP
   CC -->|"OTLP direct — how the tool itself is measured"| CWCC
@@ -45,6 +61,7 @@ flowchart TB
   GCPOBS -.->|"read-only"| CC
 
   style TOOLING fill:#f6f4ff,stroke-dasharray:4
+  style PLANE fill:#f6f4ff,stroke-dasharray:4
   style GOVERNED fill:#f6f4ff,stroke-width:2px
   classDef hub stroke-width:3px;
   classDef plane stroke-width:2px;
