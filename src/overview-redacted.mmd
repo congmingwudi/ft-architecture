@@ -35,15 +35,15 @@ flowchart TB
     IDEMCP ~~~ FREDSK
   end
 
-  subgraph PLANE["Model calls · device policy"]
-  BR["<b>Claude on AWS Bedrock (or GCP)</b><br/>inference runs in your own AWS account<br/>AWS SSO, IAM, CloudTrail, VPC endpoints<br/>PAYG on existing AWS agreement<br/>zero data retention<br/><i>+ Claude apps gateway: model and managed<br/>settings per IdP group, spend limits</i>"]
-  MDM["<b>MDM — Jamf or Intune</b><br/>fleet delivery of endpoint/gateway"]
-  end
-
   subgraph AWS["AWS"]
     AWSAPP["Payments services"]
     AWSOBS["Application logs · metrics · deploy state"]
     CWCC["<b>CloudWatch — Claude Code usage</b><br/>native OTLP endpoints, no collector<br/>sessions · tokens · cost · active time<br/>commits · PRs · lines changed<br/>edit-permission decisions<br/><i>behavioural signal only — prompt content off</i>"]
+  end
+
+  subgraph PLANE["Model calls · device policy — the two policy sources that are not the repo"]
+  BR["<b>Claude on AWS Bedrock (or GCP)</b><br/>inference runs in your own AWS account<br/>AWS SSO, IAM, CloudTrail, VPC endpoints<br/>PAYG on existing AWS agreement<br/>zero data retention<br/><i>+ Claude apps gateway: model and managed<br/>settings per IdP group, spend limits</i>"]
+  MDM["<b>MDM — Jamf or Intune</b><br/>fleet delivery of endpoint/gateway"]
   end
 
   VSC --> CC
@@ -51,7 +51,8 @@ flowchart TB
   SM --> CC
   TERM --> CC
 
-  MDM -->|"managed settings, pushed to machines —<br/>the one policy source that is not in the repo"| CC
+  CC ---|"managed settings"| MDM
+  MDM ~~~ BR
   CC ==>|"every model call"| BR
   CC <-->|"the tools around the code"| TOOLING
   CC ==>|"build and deploy"| AWSAPP
