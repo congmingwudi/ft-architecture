@@ -50,7 +50,11 @@ flowchart TB
   SM --> CC
   TERM --> CC
 
-  CC ---|"managed settings"| MDM
+  %% MDM sits at Claude Code's own rank so the group top-aligns with the policy
+  %% box. Any VISIBLE edge from CC would force MDM a rank lower (dagre ranks by
+  %% edge direction, and this mermaid has no reversed arrow), so the rank is set
+  %% by an invisible link from a top-row node instead. Measured 2026-08-23 — see D31.
+  VSC ~~~ MDM
   MDM ~~~ BR
   CC ==>|"every model call"| BR
   CC <-->|"the tools around the code"| TOOLING
