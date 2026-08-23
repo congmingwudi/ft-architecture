@@ -12,7 +12,6 @@ flowchart TB
     GCPAPP["Customer-facing web"]
     GCPOBS["Logs · metrics · deploy state"]
   end
-
   subgraph TOOLING["Reached by skill or MCP server"]
     GH["GitHub — review and CI<br/><i>the gh CLI, and an MCP server</i><br/><b>GitHub Actions</b> — the tests run on every PR"]
     JIRA["Jira — the delivery record<br/><i>a skill, driving the REST API</i>"]
@@ -34,16 +33,16 @@ flowchart TB
     SLACK ~~~ FREDSK
     IDEMCP ~~~ FREDSK
   end
-
-  subgraph AWS["AWS"]
-    AWSAPP["Payments services"]
-    AWSOBS["Application logs · metrics · deploy state"]
-    CWCC["<b>CloudWatch — Claude Code usage</b><br/>native OTLP endpoints, no collector<br/>sessions · tokens · cost · active time<br/>commits · PRs · lines changed<br/>edit-permission decisions<br/><i>behavioural signal only — prompt content off</i>"]
-  end
-
-  subgraph PLANE["Model calls · device policy — the two policy sources that are not the repo"]
-  BR["<b>Claude on AWS Bedrock (or GCP)</b><br/>inference runs in your own AWS account<br/>AWS SSO, IAM, CloudTrail, VPC endpoints<br/>PAYG on existing AWS agreement<br/>zero data retention<br/><i>+ Claude apps gateway: model and managed<br/>settings per IdP group, spend limits</i>"]
-  MDM["<b>MDM — Jamf or Intune</b><br/>fleet delivery of endpoint/gateway"]
+  subgraph LEFTCOL[" "]
+    subgraph PLANE["Model calls · device policy"]
+    BR["<b>Claude on AWS Bedrock (or GCP)</b><br/>inference runs in your own AWS account<br/>AWS SSO, IAM, CloudTrail, VPC endpoints<br/>PAYG on existing AWS agreement<br/>zero data retention<br/><i>+ Claude apps gateway: model and managed<br/>settings per IdP group, spend limits</i>"]
+    MDM["<b>MDM — Jamf or Intune</b><br/>fleet delivery of endpoint/gateway"]
+    end
+    subgraph AWS["AWS"]
+      AWSAPP["Payments services"]
+      AWSOBS["Application logs · metrics · deploy state"]
+      CWCC["<b>CloudWatch — Claude Code usage</b><br/>native OTLP endpoints, no collector<br/>sessions · tokens · cost · active time<br/>commits · PRs · lines changed<br/>edit-permission decisions<br/><i>behavioural signal only — prompt content off</i>"]
+    end
   end
 
   VSC --> CC
@@ -52,7 +51,6 @@ flowchart TB
   TERM --> CC
 
   CC ---|"managed settings"| MDM
-  MDM ~~~ BR
   CC ==>|"every model call"| BR
   CC <-->|"the tools around the code"| TOOLING
   CC ==>|"build and deploy"| AWSAPP
@@ -61,6 +59,7 @@ flowchart TB
   AWSOBS -.->|"read-only — what an SRE investigates with"| CC
   GCPOBS -.->|"read-only"| CC
 
+  style LEFTCOL fill:none,stroke:none
   style TOOLING fill:#f6f4ff,stroke-dasharray:4
   style PLANE fill:#f6f4ff,stroke-dasharray:4
   style GOVERNED fill:#f6f4ff,stroke-width:2px
