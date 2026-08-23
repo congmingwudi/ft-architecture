@@ -8,6 +8,10 @@ flowchart TB
     CC["<b>Claude Code</b><br/>the same tool, the same policy,<br/>wherever the work already happens"]
   end
 
+  subgraph GCP["GCP"]
+    GCPAPP["Customer-facing web"]
+    GCPOBS["Logs · metrics · deploy state"]
+  end
 
   subgraph TOOLING["Reached by skill or MCP server"]
     GH["GitHub — review and CI<br/><i>the gh CLI, and an MCP server</i><br/><b>GitHub Actions</b> — the tests run on every PR"]
@@ -31,19 +35,15 @@ flowchart TB
     IDEMCP ~~~ FREDSK
   end
 
-  subgraph GCP["GCP"]
-    GCPAPP["Customer-facing web"]
-    GCPOBS["Logs · metrics · deploy state"]
+  subgraph PLANE["Model calls · device policy"]
+  BR["<b>Claude on AWS Bedrock (or GCP)</b><br/>inference runs in your own AWS account<br/>AWS SSO, IAM, CloudTrail, VPC endpoints<br/>PAYG on existing AWS agreement<br/>zero data retention<br/><i>+ Claude apps gateway: model and managed<br/>settings per IdP group, spend limits</i>"]
+  MDM["<b>MDM — Jamf or Intune</b><br/>fleet delivery of endpoint/gateway"]
   end
+
   subgraph AWS["AWS"]
     AWSAPP["Payments services"]
     AWSOBS["Application logs · metrics · deploy state"]
     CWCC["<b>CloudWatch — Claude Code usage</b><br/>native OTLP endpoints, no collector<br/>sessions · tokens · cost · active time<br/>commits · PRs · lines changed<br/>edit-permission decisions<br/><i>behavioural signal only — prompt content off</i>"]
-  end
-
-  subgraph PLANE["Where every model call goes — and how policy reaches the device"]
-  BR["<b>Claude on AWS Bedrock (or GCP)</b><br/>inference runs in your own AWS account<br/>AWS SSO, IAM, CloudTrail, VPC endpoints<br/>PAYG on existing AWS agreement<br/>zero data retention<br/><i>+ Claude apps gateway: model and managed<br/>settings per IdP group, spend limits</i>"]
-  MDM["<b>MDM — Jamf or Intune</b><br/>fleet delivery of endpoint/gateway"]
   end
 
   VSC --> CC
