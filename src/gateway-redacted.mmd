@@ -24,6 +24,8 @@ flowchart TB
     SSMP["SSM Parameter Store - SecureString<br/>/claude-gateway/*<br/>OIDC secret - JWT key - Postgres password<br/><i>read at service start, never in user-data</i>"]
     IAMP["IAM instance profile - <b>no static keys</b><br/>bedrock:InvokeModel* / Converse*<br/>ssm:GetParameter on /claude-gateway/* only<br/>kms:Decrypt conditioned on ssm ViaService"]
     BR["<b>4 - inference · Amazon Bedrock</b><br/>bedrock-runtime<br/><i>the AWS default credential chain -<br/>no key is copied anywhere</i><br/>us.anthropic.claude-opus-4-6-v1<br/>us.anthropic.claude-sonnet-4-6<br/>us.anthropic.claude-haiku-4-5<br/><i>us. is the US geo profile at the 10% premium,<br/>global. the same line at list - one word,<br/>and that is the residency decision</i>"]
+    ZDR["<b>Zero data retention - mode none</b><br/>nothing written to durable storage by AWS,<br/>nothing shared with the model provider<br/><b>set and re-read on all four cells, 2026-08-23:</b><br/>bedrock-runtime + bedrock-mantle,<br/>us-east-1 + us-west-2<br/><i>scoped per region AND per control plane</i><br/><i>proved by API - fails closed - lockable by SCP</i>"]
+    BR --- ZDR
     SSMP -.-> GW
     IAMP -.-> GW
   end
@@ -45,5 +47,6 @@ flowchart TB
   style AUD fill:#f6f4ff
   style DIFF fill:#f6f4ff
   style SGN fill:#f6f4ff
+  style ZDR fill:#f6f4ff
   classDef fallback stroke-dasharray:5;
   class LOCALGW fallback;
