@@ -1,0 +1,78 @@
+flowchart LR
+  %% diagram: gateway-gcp
+  %% PAPER DESIGN, nothing built. The AWS `gateway` block is the build record.
+  %% The name line above must stay bare. publish-architecture.sh finds it with a
+  %% line-anchored regex and exits if a block has no clean name, so keep any
+  %% commentary on its own line and never repeat the name token inline.
+  %% ---
+  %% LAID OUT FOR THE SITE'S PAN/ZOOM STAGE, WHICH IS LANDSCAPE. Not for a
+  %% free-scrolling page - that was an earlier, wrong assumption. site.css has
+  %%   .stage{height:min(74vh,760px)}
+  %% and index.html fits each diagram with
+  %%   base = min(stageW/W, stageH/H) * 0.96
+  %% so in a ~1050x760 stage the best aspect is 1050/760 = 1.38, and a TALL
+  %% diagram is punished twice: it wastes the horizontal axis AND shrinks to fit
+  %% the height. Measured on this exact content:
+  %%   TB  1481 x 2187  aspect 0.68  -> fit 0.334
+  %%   LR  2261 x 1556  aspect 1.45  -> fit 0.446   <- this file
+  %%   AWS gateway diagram, 2563 x 2445, 1.05       -> fit 0.298
+  %% Two rules follow, and the render will punish breaking either:
+  %%   1. NOTHING FLOATS. An unanchored node gets its own column off to the side,
+  %%      inflating one axis for no information. Every node hangs off the spine.
+  %%      Do not add a node without an edge.
+  %%   2. WIDE AND SHORT. Lines cap at ~40 chars so nodes stay narrow, and the
+  %%      flow runs LR so extra ranks add width rather than height.
+  %% Commentary that does not hang off a node belongs in the page prose beside
+  %% the figure - see plan/gcp/01-deployment-and-billing-gcp.md section 7.5.
+
+  PAPER["<b>⚠️ PAPER DESIGN — nothing built</b><br/>The AWS gateway diagram is a build record.<br/>This one is drawn from documentation only."]
+
+  subgraph LAPTOP["Developer laptop"]
+    MS["managed-settings.json<br/>forceLoginMethod · forceLoginGatewayUrl<br/><i>managed-only keys, pushed by MDM</i><br/><b>identical to the AWS deployment;<br/>only the URL differs</b>"]
+    CC["<b>Claude Code</b><br/>an IdP session, and nothing else<br/><b>no GCP credential on the machine</b>"]
+    MS --> CC
+  end
+
+  subgraph IDP["Google Workspace - the identity provider"]
+    WS["<b>1 · 2 - sign in, session minted</b><br/>accounts.google.com · /oauth/callback<br/>scopes: openid, profile, email<br/>allowed_email_domains gates sign-in"]
+    GRP["<b>⚠️ id_tokens carry no groups claim</b><br/>oidc.google_groups queries the Admin SDK<br/>via a service-account <b>key file</b> with<br/>domain-wide delegation<br/><i>without it, one policy per email domain</i><br/><i>a non-issue on Okta or Entra</i>"]
+    WS --> GRP
+  end
+
+  ALB["<b>3 - reaching the gateway</b><br/>internal Application Load Balancer<br/>internal DNS name and certificate<br/><i>*.run.app is public, so /login's<br/>private-address check rejects it</i><br/><i>set trusted_proxies, or audit lines<br/>record the balancer, not the developer</i>"]
+
+  subgraph GCP["Google Cloud - project «project» · region «region»"]
+    SM["<b>Secret Manager</b> - four secrets<br/>config · jwt · oidc secret · pg url"]
+    SA["<b>Service account</b> - no static keys<br/>roles/aiplatform.user<br/>ADC on Cloud Run or Workload Identity"]
+    GW["<b>claude gateway</b><br/>image from Artifact Registry<br/>Cloud Run ingress internal, or GKE<br/>--timeout=3600, or streams cut at 300s<br/>Direct VPC egress to Cloud SQL<br/><i>⚠️ org policy can force the GKE track</i>"]
+    PG["<b>Cloud SQL for PostgreSQL 16</b><br/>private IP · sslmode=require<br/>sessions, spend limits, audit<br/><i>boot is fail-closed after 5s</i>"]
+    AP["<b>4 - inference · Agent Platform</b><br/>provider: vertex · project · region<br/>claude-opus-4-8 · claude-sonnet-4-6<br/><i>first-party ids, no us.anthropic.</i>"]
+    RES["<b>Residency - three tiers</b><br/>global: no premium<br/>multi-region us or eu: <b>10%</b><br/>regional: 10%, one named region<br/><b>⚠️ regional serves Sonnet 4.6 and older</b><br/><i>one region costs models, not just 10%</i>"]
+    RET["<b>Retention - unlike Bedrock</b><br/>~24h cache on by default; turn it off<br/>with disableCache on the project<br/><b>⚠️ no fail-closed, no allowed_modes,</b><br/><b>no source field, no Org Policy lock</b>"]
+    SM -.-> GW
+    SA -.-> GW
+    GW --> PG
+    GW ==> AP
+    AP --> RES
+    AP --> RET
+  end
+
+  POL["<b>Policy, enforced server-side</b><br/>availableModels + enforceAvailableModels<br/>permissions.deny · desktop: {}<br/>keyed on IdP group, at the managed tier<br/><b>identical to AWS - the claude binary,<br/>not the cloud</b>"]
+  AUD["<b>Audit</b> - one JSON line each<br/>device.authorize · session.mint<br/>managed.serve · inference<br/><b>the only per-developer record</b> - the<br/>cloud sees one service account"]
+  CAL["<b>⚠️ Cloud Audit Logs - default inverts</b><br/>prediction calls are DATA_READ, so they<br/>land in <b>Data Access logs, off by default</b><br/><i>on AWS the CloudTrail record needs no<br/>opt-in; here it must be enabled first</i>"]
+
+  PAPER -.-> MS
+  CC ==> WS
+  CC ==> ALB
+  ALB ==> GW
+  GW --> POL
+  GW --> AUD
+  AP -.-> CAL
+
+  style PAPER fill:#fff1f0,stroke:#b42318,stroke-width:3px
+  style POL fill:#f6f4ff
+  style AUD fill:#f6f4ff
+  style CAL fill:#fff7ed
+  style RES fill:#fff7ed
+  style RET fill:#fff7ed
+  style GRP fill:#fff7ed

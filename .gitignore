@@ -1,0 +1,5 @@
+
+# Local Claude Code config. This repo is a publish target, not a working repo,
+# and publish-architecture.sh runs `git add -A` — without this rule the hook
+# paths in .claude/settings.json would be swept into a public repo.
+.claude/
