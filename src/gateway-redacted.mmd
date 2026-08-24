@@ -1,0 +1,49 @@
+flowchart TB
+  %% diagram: gateway
+  subgraph LAPTOP["Developer laptop - what the developer actually holds"]
+    CC["<b>Claude Code</b><br/>an IdP session, and nothing else<br/><b>no AWS credential on this machine</b>"]
+    MS["managed-settings.json<br/>forceLoginMethod - forceLoginGatewayUrl<br/><i>managed-only keys: MDM pushes these,<br/>a developer cannot set them</i>"]
+    LOCALGW["<i>fallback - the same binary, run here</i><br/>127.0.0.1:8080, Homebrew postgres<br/><i>switching is one URL in managed settings</i>"]
+    MS --> CC
+  end
+
+  subgraph AWSW["AWS us-west-2 - the identity provider"]
+    COG["<b>1 · 2 - sign in, session minted</b><br/>Cognito user pool - OIDC<br/>hosted-UI domain, authorization code flow<br/>scopes: openid, profile, email<br/><i>no offline_access - Cognito rejects unknown scopes</i><br/><i>email_verified=true, or the sign-in is refused</i>"]
+  end
+
+  TSNET["<b>3 - every model call, inside the tunnel</b><br/>Tailscale tailnet - WireGuard<br/>claude-gateway.«tailnet».ts.net<br/>Let's Encrypt cert, issued by Tailscale<br/>tailscale serve --https=443 to 127.0.0.1:8080<br/><i>Claude Code refuses plain HTTP off-loopback,<br/>even to an RFC1918 address - this is the fix</i>"]
+
+  subgraph AWSE["AWS us-east-1 - account «account»"]
+    subgraph EC2["EC2 t4g.small - AL2023 arm64 - «instance»"]
+      GW["<b>claude gateway</b> - systemd unit<br/>binary from the signed dnf repo, so it<br/>cannot update itself under a demo<br/>listen 127.0.0.1:8080"]
+      PG["postgresql 16 - local to the box<br/>sessions, spend limits, audit"]
+      TSD["tailscaled - subnet router<br/>advertises 172.31.0.0/20"]
+      SGN["Security group - <b>zero inbound rules</b><br/>no SSH port, no key pair, nothing exposed<br/>administration is SSM Session Manager"]
+      GW --> PG
+    end
+    SSMP["SSM Parameter Store - SecureString<br/>/claude-gateway/*<br/>OIDC secret - JWT key - Postgres password<br/><i>read at service start, never in user-data</i>"]
+    IAMP["IAM instance profile - <b>no static keys</b><br/>bedrock:InvokeModel* / Converse*<br/>ssm:GetParameter on /claude-gateway/* only<br/>kms:Decrypt conditioned on ssm ViaService"]
+    BR["<b>4 - inference · Amazon Bedrock</b><br/>bedrock-runtime<br/><i>the AWS default credential chain -<br/>no key is copied anywhere</i><br/>us.anthropic.claude-opus-4-6-v1<br/>us.anthropic.claude-sonnet-4-6<br/>us.anthropic.claude-haiku-4-5<br/><i>us. is the US geo profile at the 10% premium,<br/>global. the same line at list - one word,<br/>and that is the residency decision</i>"]
+    SSMP -.-> GW
+    IAMP -.-> GW
+  end
+
+  CC ==> COG
+  CC ==> TSNET
+  TSNET ==> GW
+  GW ==> BR
+
+  POL["<b>Policy, enforced server-side</b><br/><i>served as managed.serve, with a sha256 checksum</i><br/>availableModels + enforceAvailableModels<br/>permissions.deny - desktop: {}<br/>keyed on IdP group, delivered at the managed<br/>settings tier - a developer cannot override it"]
+  AUD["<b>Audit</b> - one JSON line each<br/>device.authorize - session.mint<br/>managed.serve - inference<br/>identity, model, upstream, status, latency"]
+  GW --> POL
+  GW --> AUD
+  POL -.-> CC
+
+  DIFF["<b>What differs at FinTechCo</b><br/>Cognito to Okta or Entra - one oidc: block either way<br/>single EC2 to Fargate + RDS + ALB<br/>Tailscale MagicDNS to an internal ALB with an ACM cert<br/>one catch-all policy to one per IdP group<br/><i>the security properties are identical either way;<br/>what a single box gives up is availability, not posture</i>"]
+
+  style POL fill:#f6f4ff
+  style AUD fill:#f6f4ff
+  style DIFF fill:#f6f4ff
+  style SGN fill:#f6f4ff
+  classDef fallback stroke-dasharray:5;
+  class LOCALGW fallback;
