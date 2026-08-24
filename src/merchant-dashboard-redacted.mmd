@@ -1,0 +1,28 @@
+flowchart LR
+  %% diagram: merchant-dashboard
+  subgraph WS["Workstation - ft-merchant-dashboard/"]
+    CC["claude - VS Code opened at the estate root"]
+    MD["ft-merchant-dashboard/ - TypeScript - Vite<br/>computes Refundable in integer cents<br/>writes the support ticket<br/>git remote github.com/«org»/ft-merchant-dashboard (private)<br/>default branch master"]
+    VITE["Vite dev server :5173 - npm run dev<br/>proxies /v1 to :8000"]
+    B2["Browser - localhost:5173"]
+    CC -->|"edits, tests, reviews"| MD
+    MD -->|"npm run dev"| VITE
+    B2 --> VITE
+  end
+
+  subgraph GCP["GCP - project «gcp-project» - us-central1"]
+    CR["Cloud Run flowpay-merchant-dashboard<br/>nginx: static dist/ + /v1 reverse proxy<br/>min 0 / max 2 - 256 Mi - unauthenticated<br/>«service».us-central1.run.app"]
+  end
+  %% pushes the Cloud Run cluster past the workstation cluster; without it the
+  %% two overlap by 28px and GCP's title renders under the workstation box.
+  VITE ~~~ CR
+  B["Browser - the Cloud Run URL"] --> CR
+  CC ==>|"deploy/gcp/deploy_cloud_run.sh<br/>Cloud Build: node:22-alpine build, then nginx:1.27-alpine"| CR
+
+  APIDEP["FlowPay API - API Gateway<br/>«api-id».execute-api.us-west-2.amazonaws.com<br/><i>this diagram ends here - see the FlowPay diagram</i>"]
+  APILOC["FlowPay API - uvicorn :8000<br/><i>the same interface, run locally</i>"]
+  CR -->|"proxy_pass to API_UPSTREAM<br/>server-side, so the browser stays same-origin - no CORS"| APIDEP
+  VITE -.->|"/v1 proxied in dev - the same shape as production"| APILOC
+
+  classDef boundary stroke-dasharray:5;
+  class APIDEP,APILOC boundary;

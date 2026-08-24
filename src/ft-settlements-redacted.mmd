@@ -1,0 +1,36 @@
+flowchart LR
+  %% diagram: ft-settlements
+  subgraph WS["Workstation - ft-settlements/"]
+    CC2["claude - IntelliJ IDEA opened at ft-settlements/<br/>ft-settlements/CLAUDE.md<br/>docs/plan.md worked task by task, TDD"]
+    IDEMCP["IDEA MCP server<br/>http://127.0.0.1:64342/stream<br/>declared in ft-settlements/.mcp.json"]
+    FS["ft-settlements/ - Java 21 - Maven<br/>domain - stream - batch - store<br/>domain/ imports no AWS types<br/>git remote github.com/«org»/ft-settlements (private)"]
+    MVN["mvn test / mvn clean package<br/>shaded jar at target/ft-settlements.jar"]
+    CC2 --- IDEMCP
+    CC2 -->|"edits, TDD loop, runs the suite"| FS
+    FS -->|"mvn clean package"| MVN
+  end
+
+  CHARGES["DynamoDB flowpay-charges<br/><i>owned by FlowPay - see its diagram</i><br/>stream NEW_AND_OLD_IMAGES - D18"]
+
+  subgraph AWS["AWS - account «account» - us-west-2"]
+    ESM["EventSourceMapping<br/>StartingPosition LATEST - batch 10"]
+    SLAM["Lambda ft-settlements<br/>java21 - arm64 - 512 MB<br/>ChargeStreamHandler"]
+    SDDB["DynamoDB ft-settlements<br/>PK settlement_date - SK charge_id"]
+    EB["EventBridge ft-settlements-daily<br/>cron 0 2 * * ? *"]
+    BLAM["Lambda ft-settlements-batch<br/>same jar - DailyBatchHandler"]
+    S3["S3 ft-settlements-«account»<br/>settlements/YYYY-MM-DD.json"]
+    ESM --> SLAM
+    SLAM -->|"PutItem derived position"| SDDB
+    EB --> BLAM
+    SDDB -->|"Query by settlement_date"| BLAM
+    BLAM --> S3
+  end
+  CHARGES -->|"stream"| ESM
+  CC2 ==>|"deploy/aws/deploy.sh<br/>Maven Shade jar to zip - no Docker"| SLAM
+
+  OBS["<b>An observer, enforced by IAM</b><br/>it reads charges the payments service already committed,<br/>and writes only to its own table and bucket -<br/>so it cannot break the service it settles"]
+  FS --- OBS
+
+  classDef boundary stroke-dasharray:5;
+  class CHARGES boundary;
+  style OBS fill:#f6f4ff

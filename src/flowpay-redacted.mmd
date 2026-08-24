@@ -1,0 +1,33 @@
+flowchart LR
+  %% diagram: flowpay
+  subgraph WS["Workstation - flowpay/"]
+    CC["claude - VS Code opened at the estate root<br/>estate CLAUDE.md - .claude/settings.json<br/>/impact-analysis - /architecture-sweep"]
+    FP["flowpay/ - Python 3.12<br/>services/payments - charges, refunds, idempotency<br/>services/ledger - double-entry<br/>web/dashboard - TypeScript client lib<br/>git remote github.com/«org»/flowpay (private)"]
+    UV["uvicorn :8000 - make run<br/>FastAPI - InMemoryStore<br/>make test - pytest"]
+    CC -->|"edits, tests, reviews"| FP
+    FP -->|"make run"| UV
+  end
+
+  subgraph AWS["AWS - account «account» - us-west-2"]
+    APIGW["API Gateway HTTP API - flowpay-api<br/>$default stage - Lambda proxy integration<br/>«api-id».execute-api.us-west-2.amazonaws.com"]
+    LAM["Lambda flowpay-api<br/>python3.12 - arm64 - 512 MB - 15 s<br/>FastAPI via Mangum - FLOWPAY_STORE=dynamodb"]
+    DDB["DynamoDB flowpay-charges<br/>PK charge_id - PAY_PER_REQUEST<br/>money as integer cents<br/>stream NEW_AND_OLD_IMAGES - D18"]
+    APIGW --> LAM
+    LAM -->|"GetItem / PutItem"| DDB
+  end
+
+  GHUB["GitHub - congmingwudi/flowpay<br/>GitHub Actions: pytest on Python 3.12,<br/>on push to main and on every PR"]
+  CC ==>|"deploy/aws/deploy.sh - creates the API, role and table<br/>build_lambda.sh zips pip wheels, no Docker"| LAM
+  CC -->|"/commit-push-pr skill - commit, push, open the PR"| GHUB
+
+  MDB["ft-merchant-dashboard<br/><i>calls this API - see its own diagram</i>"]
+  SETB["ft-settlements<br/><i>consumes the charges stream - see its own diagram</i>"]
+  MDB -.->|"GET /v1/charges - POST /v1/refunds"| APIGW
+  DDB -.->|"stream, NEW_AND_OLD_IMAGES"| SETB
+
+  RULE["<b>The house rule, and the seeded bug</b><br/>money is integer cents at rest and on the wire<br/>services/payments/refunds.py remaining_refundable()<br/>computes in float dollars - the one place that breaks it"]
+  FP --- RULE
+
+  classDef boundary stroke-dasharray:5;
+  class MDB,SETB boundary;
+  style RULE fill:#f6f4ff

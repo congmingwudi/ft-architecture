@@ -1,0 +1,39 @@
+flowchart LR
+  %% diagram: ft-fred-analysis
+  subgraph WS["Workstation - ft-fred-analysis/"]
+    CC["claude - VS Code<br/>the vignette 2 workspace"]
+    FREDW["ft-fred-analysis/ - Python workspace<br/>main = the empty post-reset state<br/>deliverable branch = the published readout<br/>.env holds FRED_API_KEY - never printed<br/>git remote github.com/«org»/ft-fred-analysis (private)"]
+    FETCHSK["fetch-fred skill - .claude/skills/<br/>fetch(series, freq) returns an aligned DataFrame<br/>FRED_API_KEY loaded from .env, scrubbed from output<br/>caches to data/fred-cache/ - no re-fetch while charting"]
+    PUBSK["publish-readout skill - .claude/skills/<br/>the page, the PDF and the Slack post"]
+    CC -->|"the workspace"| FREDW
+    CC -->|"FEDFUNDS + DRCCLACBS, aligned quarterly"| FETCHSK
+    CC -->|"publishes the readout"| PUBSK
+  end
+
+  FREDAPI["FRED API - api.stlouisfed.org"]
+  FETCHSK -->|"HTTPS - key from .env, never printed"| FREDAPI
+
+  PAGES["GitHub Pages - ft-architecture<br/>/readout/ - the credit-risk readout"]
+  SLACKCH["Slack #project-fintechco<br/>MCP server - slack_send_message"]
+  PUBSK -->|"publish-readout.sh - page, PDF, push"| PAGES
+  PUBSK -->|"posts the readout"| SLACKCH
+
+  RESET["<b>Wiped on every reset</b><br/>scripts/reset-demo.sh returns this workspace to<br/>.claude .env .git .gitignore .venv - which is what main holds<br/>rendered fallbacks are kept in fallback/ at the estate root"]
+  FREDW --- RESET
+
+  subgraph FUT["Future - run where the data scientists already are"]
+    SMS["SageMaker Studio JupyterLab space<br/>managed Linux with a terminal, in-VPC"]
+    CC3["Claude Code CLI installed in the space<br/>npm i -g @anthropic-ai/claude-code<br/>CLAUDE_CODE_USE_BEDROCK=1"]
+    SDK["Agent SDK, called from a notebook cell<br/>pip install claude-agent-sdk<br/>agent and analysis in one artifact"]
+    POLICY3["the same .claude/ policy layer<br/>skills, permissions and memory<br/>loaded identically by both"]
+    SMS --> CC3
+    SMS --> SDK
+    POLICY3 --> CC3
+    POLICY3 --> SDK
+  end
+  FREDW -.->|"notebooks and .env move into the space"| SMS
+  CC3 -.->|"the same fetch-fred skill, from in-VPC:<br/>needs egress, a NAT or a proxy"| FREDAPI
+
+  classDef planned stroke-dasharray:3;
+  class SMS,CC3,SDK,POLICY3 planned;
+  style RESET fill:#f6f4ff
