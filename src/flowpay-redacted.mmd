@@ -16,7 +16,7 @@ flowchart LR
     LAM -->|"GetItem / PutItem"| DDB
   end
 
-  GHUB["GitHub - congmingwudi/flowpay<br/>GitHub Actions: pytest on Python 3.12,<br/>on push to main and on every PR"]
+  GHUB["GitHub - «org»/flowpay<br/>GitHub Actions: pytest on Python 3.12,<br/>on push to main and on every PR"]
   CC ==>|"deploy/aws/deploy.sh - creates the API, role and table<br/>build_lambda.sh zips pip wheels, no Docker"| LAM
   CC -->|"/commit-push-pr skill - commit, push, open the PR"| GHUB
 
