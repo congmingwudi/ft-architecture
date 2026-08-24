@@ -39,6 +39,11 @@
   .pan{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform}
   .pan svg{display:block;max-width:none!important;height:auto}
   .stage:fullscreen{height:100vh;background:#fff}
+  /* Full screen targets the whole .figure, not .stage — fullscreening the stage
+     alone carries its min(74vh,760px) height with it, so the diagram gained no
+     room and the control bar vanished. */
+  .figure:fullscreen{background:var(--surface);display:flex;flex-direction:column}
+  .figure:fullscreen .stage{flex:1;height:auto;min-height:0}
   .hint{font-size:13px;color:var(--muted);margin:10px 0 0}
 
   .legend{display:flex;gap:20px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);margin:14px 0 0;padding:0;list-style:none}
