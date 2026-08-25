@@ -94,9 +94,10 @@
     a{color:inherit;text-decoration:none}
   }
 
-  /* ---- wide layout: the architecture page uses the full page width. The readout
-         keeps the default measure, because it is a document to be read, and its
-         PDF is rendered from it. ---- */
+  /* ---- wide layout: used by both the architecture page and the readout page,
+         so text stretches to the page width rather than the classic ~70ch
+         reading measure. The readout's PDF is rendered from this same page, so
+         the PDF picks up the wide layout too. ---- */
   .wrap.wide{max-width:min(1560px,94vw)}
   .wide p,.wide .sub,.wide ul,.wide ol,.wide li{max-width:none}
   .wide .grid{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}

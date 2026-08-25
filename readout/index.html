@@ -6,19 +6,20 @@
 <title>Credit-risk readout — FinTechCo</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>📊</text></svg>">
-<link rel="stylesheet" href="../assets/site.css?v=ddfd0b67">
+<link rel="stylesheet" href="../assets/site.css?v=042c0d5b">
 </head>
 <body>
-<div class="wrap readout">
+<div class="wrap readout wide">
 <nav class="site">
   <a href="../">Architecture</a>
   <a href="./" aria-current="page">Credit-risk readout</a>
 </nav>
 <div class="meta">
-  <span>Published 2026-08-25 06:40 UTC</span><span class="dot">·</span>
+  <span>Published 2026-08-25 06:53 UTC</span><span class="dot">·</span>
   <span>from the Claude Code session that produced it</span>
 </div>
 <h1>Rate Cycles and Credit-Card Delinquency: A ~2-Year Lag</h1>
+<figure><img src="fedfunds_delinquency.png" alt="Fed funds rate versus credit-card delinquency, with the lag annotated"><figcaption>Fed funds rate versus credit-card delinquency, with the lag annotated</figcaption></figure>
 <h2>The finding</h2>
 <p>Since 2000, changes in the effective fed funds rate lead changes in the credit-card delinquency rate by roughly <strong>9 quarters (about 2 years)</strong>. Cross-correlating quarter-over-quarter changes in each series at lags of 0–12 quarters, correlation is essentially flat (and near zero) through lag 4, then rises steadily and peaks at lag 9 (r ≈ 0.29 on quarterly changes; r ≈ 0.69 on levels at the same lag). This matches the visible pattern in the chart: every major hiking cycle (2004–06, 2015–18, 2022–23) is followed by a delinquency climb that shows up roughly two years later, well after the Fed has often already started cutting.</p>
 <p>The 2008–09 spike is the clearest case: the fed funds rate topped out in mid-2007, and credit-card delinquency didn't peak until Q3 2009 — about 9 quarters later, right in line with the estimated lag.</p>
